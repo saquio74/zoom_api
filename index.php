@@ -5,17 +5,18 @@ $zoom_meeting = new Zoom_api();
 
 $data = array();
 $data['topic']      = "example meeting";
-$data['start_date'] = date("Y-m-d h:i:s", strtotime('tomorrow'));
+$data['start_date'] = date("Y-m-d h:i:s", strtotime('today'));
 $data['duration']   = 30;
 $data['type']       = 2;
 $data['password']   = '123456';
 try {
-	$response = $zoom_meeting->createMeeting($data);
-	
+	//$response = $zoom_meeting->createMeeting($data);
+	$response = $zoom_meeting->createRoom();
 	echo "<pre>";
 	print_r($response);
 	echo "<pre>";
-	$meetInfo = $zoom_meeting->infoMeet($response->id);
+	$meetInfo = $zoom_meeting->infoMeet(81221617407);
+
 	echo "<pre>";
 	print_r($meetInfo);
 	echo "<pre>";

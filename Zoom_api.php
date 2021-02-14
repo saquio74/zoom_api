@@ -3,8 +3,9 @@ require __DIR__ . '/vendor/autoload.php';
 use \Firebase\JWT\JWT;
 
 class Zoom_api{
-    private $zoom_api_key = 'OHIWzvjzTBicHJwLlJ7pKw';
-    private $zoom_api_secret = 'a9hnX4e5fNHxeWNkeP8MEsoOtii3zNRwseAI';
+    private $zoom_api_key = '<your api key>';
+    private $zoom_api_secret = '<your api secret>';
+    
 
     //generate jwt
     public function generateJWT(){
@@ -12,7 +13,9 @@ class Zoom_api{
         $secret = $this->zoom_api_secret;
         $token = array(
             "iss"=>$key,
+            //generation date
             'iat'=>time(),
+            //expiration date
             'exp'=>time()+604800
         );
         return JWT::encode($token,$secret);
@@ -46,11 +49,10 @@ class Zoom_api{
     }
     public function sendRequest($data){
         //email para personalizar
-        $request_url = "https://api.zoom.us/v2/users/pedroguananja@gmail.com/meetings";
+        
+        $request_url = "https://api.zoom.us/v2/users/<your email>/meetings";
 		echo "<pre>";
-        $timestamp = time();
-        $expiration = time()+604800;
-        print_r($timestamp);
+        
         echo "<br>";
         print_r($this->generateJWT());
         echo "<pre>";
@@ -86,7 +88,37 @@ class Zoom_api{
     }
     
     public function infoMeet($id){
-        $url = 'https://api.zoom.us/v2/meetings/'.$id.'/registrants';
+        $url = 'https://api.zoom.us/v2/past_meetings/'.$id.'/participants';
+        $headers = array(
+            "authorization: Bearer ".$this->generateJWT(),
+			"content-type: application/json",
+			"Accept: application/json",
+        );
+        $ch = curl_init();
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ));
+
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if (!$response) {
+                return $err;
+		}
+        
+        return json_decode($response);
+        
+    }
+    
+    public function meetingList(){
+        $url = 'https://api.zoom.us/v2/users/<your email>/meetings';
         $headers = array(
             "authorization: Bearer ".$this->generateJWT(),
 			"content-type: application/json",
@@ -115,6 +147,38 @@ class Zoom_api{
         
     }
     public function createRoom(){
+        $request_url = "https://api.zoom.us/v2/rooms";
+		$headers = array(
+			"authorization: Bearer ".$this->generateJWT(),
+			"content-type: application/json",
+			"Accept: application/json",
+		);
+		$data = array(
+            'name'=>"Zoom Room",
+            'type' => "SchedulingDisplayOnly"
+        );
+		$postFields = json_encode($data);
+		
+        $ch = curl_init();
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => $request_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $postFields,
+            CURLOPT_HTTPHEADER => $headers,
+        ));
+
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if (!$response) {
+                return $err;
+		}
         
+        return json_decode($response);
     }
 }
